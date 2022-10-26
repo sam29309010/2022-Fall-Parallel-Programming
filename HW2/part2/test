@@ -1,0 +1,7 @@
+./mandelbrot -t 2 -v 1
+./mandelbrot -t 3 -v 1
+./mandelbrot -t 4 -v 1
+
+./mandelbrot -t 2 -v 2
+./mandelbrot -t 3 -v 2
+./mandelbrot -t 4 -v 2
