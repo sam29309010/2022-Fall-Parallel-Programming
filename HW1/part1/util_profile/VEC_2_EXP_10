@@ -1,0 +1,44 @@
+[1;31mCLAMPED EXPONENT[0m (required) 
+Results matched with answer!
+**************** Breakdown of Intrinsics Instructions ****************
+ Instruction | Inst. Count | Ele. Mask | Ele. Total | Avg. Utilization
+------------- ------------- ----------- ------------ -----------------
+     cntbits |       26493 |     52986 |      52986 | 1.0000 
+     masknot |        5000 |     10000 |      10000 | 1.0000 
+         veq |        5000 |     10000 |      10000 | 1.0000 
+         vgt |       31493 |     62986 |      62986 | 1.0000 
+       vload |       10000 |     20000 |      20000 | 1.0000 
+         vlt |       26493 |     29592 |      52986 | 0.5585 
+       vmove |       10000 |     11533 |      20000 | 0.5767 
+       vmult |       21493 |     29592 |      42986 | 0.6884 
+        vset |        5004 |     10008 |      10008 | 1.0000 
+      vstore |        5000 |     10000 |      10000 | 1.0000 
+        vsub |       26493 |     38628 |      52986 | 0.7290 
+****************** Printing Vector Unit Statistics *******************
+Vector Width:              2
+Total Vector Instructions: 172469
+Vector Utilization:        82.7%
+Utilized Vector Lanes:     285325
+Total Vector Lanes:        344938
+************************ Result Verification *************************
+ClampedExp Passed!!!
+**************** Breakdown of Intrinsics Instructions ****************
+ Instruction | Inst. Count | Ele. Mask | Ele. Total | Avg. Utilization
+------------- ------------- ----------- ------------ -----------------
+
+[1;31mARRAY SUM[0m (bonus) 
+**************** Breakdown of Intrinsics Instructions ****************
+ Instruction | Inst. Count | Ele. Mask | Ele. Total | Avg. Utilization
+------------- ------------- ----------- ------------ -----------------
+        vadd |        5000 |     10000 |      10000 | 1.0000 
+       vload |        5000 |     10000 |      10000 | 1.0000 
+        vset |           1 |         2 |          2 | 1.0000 
+      vstore |           1 |         2 |          2 | 1.0000 
+****************** Printing Vector Unit Statistics *******************
+Vector Width:              2
+Total Vector Instructions: 10002
+Vector Utilization:        100.0%
+Utilized Vector Lanes:     20004
+Total Vector Lanes:        20004
+************************ Result Verification *************************
+ArraySum Passed!!!
