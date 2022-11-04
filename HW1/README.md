@@ -7,14 +7,14 @@ Parallel Programming Lab1 Report: SIMD Programming
 * Editor: 310551145 Cheng-Che Lu
 
 ### TL;DR
-SIMD Programming exploits instruction-level prarllism. Common optimization includes loop-vectorization and advanced SIMD instructions such as AVX2 or AVX512. Better data alignment and variable aliases could further improve the performance. 
+SIMD Programming exploits instruction-level parallelism. Common optimization includes loop-vectorization and advanced SIMD instructions such as AVX2 or AVX512. Better data alignment and variable aliases could further improve the performance. 
 
 `loop-vectorization`, `__restrict`, `__builtin_assume_aligned`, `AVX2`
 
 ### Relation between vector utilization and vector width
 > Q1-1: Does the vector utilization increase, decrease or stay the same as VECTOR_WIDTH changes? Why?
 
-There is a negative correlation between vector width and vector utilization, as shown in the table below, which records the usage of instruction across different vector widths tested on an array with 10000+16 independent elements.
+There is a negative correlation between vector width and vector utilization, as shown in the table below, which records instruction usage across different vector widths tested on an array with 10000+16 independent elements.
 
 | Vector Width | Maximum Exponent | # Vector Inst. | Vector Utilization |
 | ------------ | ---------------- | -------------------- | ------------------ |
@@ -51,7 +51,7 @@ To illustrate such a situation, the table below examines the effect of maximum e
 | 16     | 100 | 282,449     | 59.7%     |
 
 An unaligned array may lower the utilization. While assuming the array length is large enough, this effect would be trivial.
-Also, [a more compact algorithm](https://eli.thegreenplace.net/2009/03/21/efficient-integer-exponentiation-algorithms) for the exponent operation could alleviate this utilization issue when exponent gets larger. Instead of performing multiplication incrementally (adding 1x of base number each time), exponentiation by squaring could reduce the time complexity to *log(maximum_exp)* and 50% utilization on average.
+Also, [a more compact algorithm](https://eli.thegreenplace.net/2009/03/21/efficient-integer-exponentiation-algorithms) for the exponent operation could alleviate this utilization issue when the exponent gets larger. Instead of performing multiplication incrementally (adding 1x of base number each time), exponentiation by squaring could reduce the time complexity to *log(maximum_exp)* and 50% utilization on average.
 
 
 ### Specifying data alignment for AVX2 instructions 
@@ -112,7 +112,7 @@ Modified:
 	jne	.LBB0_3
 ```
 
-Besides, the whole optimization details for *test1*, *test2* and, *test3* functions (vector add, max, and sum operation, respectively) are listed here.
+Besides, the whole optimization details for *test1*, *test2*, and, *test3* functions (vector add, max, and sum operation, respectively) are listed here.
 
 #### Vector Add Operation
 ##### Unvectorized Implementation
@@ -362,7 +362,7 @@ Since the offset between the instructions of both methods is 16 and 32, the defa
 ### Parallelism for branch operation
 > Q2-3: Provide a theory for why the compiler is generating dramatically different assembly.
 
-Since there's a branch condition with only ```if``` block to assign a value when the condition meets, the compiler cannot identify the similarity between each array element. Some elements should perform ```if``` block operation while others don't, making the dataflow somewhat "irregular." Thus, the compiler interprets the original C++ source code as a regular sequential operation without parallelism. The modified version uses a complete ```if else``` statement to inform the compiler that the code should perform only one assignment operation based on the acomparison result. This way, it is easier for the compiler to generate the same instruction for each element and do further parallelism optimization.
+Since there's a branch condition with only ```if``` block to assign a value when the condition meets, the compiler cannot identify the similarity between each array element. Some elements should perform ```if``` block operation while others don't, making the dataflow somewhat "irregular." Thus, the compiler interprets the original C++ source code as a regular sequential operation without parallelism. The modified version uses a complete ```if else``` statement to inform the compiler that the code should perform only one assignment operation based on the comparison result. This way, it is easier for the compiler to generate the same instruction for each element and do further parallelism optimization.
 
 Original C++ & assembly code:
 ```cpp
@@ -424,7 +424,7 @@ Modified C++ & assembly code:
 	jne	.LBB0_2
 ```
 
-As shown above, the original assembly code compares every scalar independently using ```UCOMISS``` (Unordered Compare Scalar Single-Precision Floating-Point Values and Set EFLAGS) instruction and then performs required operations  if the condition has been met. Modified assembly code uses ```MAXAPS```, ```MOVUPS```, and ```MOVAPS``` to process data parallelly.
+As shown above, the original assembly code compares every scalar independently using ```UCOMISS``` (Unordered Compare Scalar Single-Precision Floating-Point Values and Set EFLAGS) instruction and then performs required operations if the condition has been met. Modified assembly code uses ```MAXAPS```, ```MOVUPS```, and ```MOVAPS``` to process data parallelly.
 
 ### Reference
 1. [Wikipeida: Advanced Vector Extensions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions)
