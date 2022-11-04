@@ -9,6 +9,12 @@
 pthread_mutex_t total_hit_mutex;
 long long int total_hit = 0;
 
+typedef struct {
+    int seed_1;
+    int seed_2;
+    long long int total_toss;
+} Thread_Arg;
+
 // Serial version
 void *single_thread_estimation_serial(void *params){
     unsigned int seed = time(NULL);
@@ -30,27 +36,24 @@ void *single_thread_estimation_serial(void *params){
 }
 
 // SIMD version
-void *single_thread_estimation_SIMD(void *params){
-    uint64_t simd_seed[2];
-    
-    long long int hit = 0, num_toss_simd = (long long int) params / 8;
-    // int32_t sub_hit[8] __attribute__((aligned(32)));
-    int sub_hit[8]; // TBD sizeof(int) == 4
+void *single_thread_estimation_SIMD(void *thread_arg){
+    Thread_Arg* arg = (Thread_Arg *) thread_arg;
+    long long int hit = 0, num_toss_simd = (arg->total_toss) / 8;
+    int sub_hit[8];
     __m256i x_i_vec, y_i_vec, cmp_i_vec, cnt_i_vec;
+    // TBD const 
     __m256 x_ps_vec, y_ps_vec, dist_ps_vec, intmax_ps_vec, one_ps_vec, cmp_ps_vec, mask_i_vec;
 
-    mask_i_vec = _mm256_set_ps(0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001);
     cnt_i_vec = _mm256_set_epi32(0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000);
     intmax_ps_vec = _mm256_set_ps(INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX, INT32_MAX);
     one_ps_vec = _mm256_set_ps(1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+    mask_i_vec = _mm256_set_ps(0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001, 0x0001);
 
     avx_xorshift128plus_key_t mykey;
-    // simd_seed must be non-zero (1 ~ 2^63)
-    simd_seed[0] = rand(); // TBD
-    simd_seed[1] = rand(); // TBD
-    avx_xorshift128plus_init(simd_seed[0], simd_seed[1], &mykey);
+    // simd_seed must be non-zero, zero is guarnteed barely assigned
+    avx_xorshift128plus_init(arg->seed_1, arg->seed_1, &mykey);
 
-    // single precision & avx2 & 8 single toss each time
+    // single precision estimation & avx2 intrinsic (8 tosses each time)
     for (long long int toss=0; toss<num_toss_simd; toss++){
         // random number & type conversion & squaring
         x_i_vec = avx_xorshift128plus(&mykey);
@@ -65,10 +68,9 @@ void *single_thread_estimation_SIMD(void *params){
 
         // distance
         dist_ps_vec = _mm256_add_ps(x_ps_vec, y_ps_vec);
-
-
+        
         // counting
-        cmp_ps_vec = _mm256_cmp_ps(dist_ps_vec, one_ps_vec, _CMP_LE_OS); // TBD _CMP_LE_OQ
+        cmp_ps_vec = _mm256_cmp_ps(dist_ps_vec, one_ps_vec, _CMP_LE_OS);
         cmp_ps_vec = _mm256_and_ps(cmp_ps_vec, mask_i_vec);
         cmp_i_vec = _mm256_cvtps_epi32(cmp_ps_vec);
         cnt_i_vec = _mm256_add_epi32(cnt_i_vec, cmp_i_vec);
@@ -102,10 +104,14 @@ int main(int argc, char **argv){
 
     // multi-thread execution using Pthread
     pthread_t *thread_handles = (pthread_t *) malloc(num_thread * sizeof(pthread_t));
+    Thread_Arg *thread_args = (Thread_Arg *) malloc(num_thread * sizeof(Thread_Arg));
     pthread_mutex_init(&total_hit_mutex, NULL);
+    srand(time(NULL));
     for (int i=0; i<num_thread; i++){
-        pthread_create(&thread_handles[i], NULL, single_thread_estimation_SIMD, (void*) total_thread_toss);
-        // pthread_create(&thread_handles[i], NULL, single_thread_estimation_serial, (void*) total_thread_toss);
+        thread_args[i].seed_1 = rand();
+        thread_args[i].seed_2 = rand();
+        thread_args[i].total_toss = total_thread_toss;
+        pthread_create(&thread_handles[i], NULL, single_thread_estimation_SIMD, (void*) &thread_args[i]);
     }
 
     for (int i=0; i<num_thread; i++){

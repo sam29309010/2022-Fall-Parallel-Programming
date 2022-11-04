@@ -52,8 +52,8 @@ void workerThreadStart(WorkerArgs *const args)
     // elapsedTime = endTime - startTime;
     // printf("[single mandelbrot thread %d]:\t\t[%.3f] ms\n", args->threadId , elapsedTime * 1000);
 
-    double startTime, endTime, elapsedTime;
-    startTime = CycleTimer::currentSeconds();
+    // double startTime, endTime, elapsedTime;
+    // startTime = CycleTimer::currentSeconds();
     for (int row=args->threadId; row<(int) args->height; row+=args->numThreads){
         mandelbrotSerial(
             args->x0, args->y0, args->x1, args->y1,
@@ -63,9 +63,9 @@ void workerThreadStart(WorkerArgs *const args)
             args->output
         );
     }
-    endTime = CycleTimer::currentSeconds();
-    elapsedTime = endTime - startTime;
-    printf("[single mandelbrot thread %d]:\t\t[%.3f] ms\n", args->threadId , elapsedTime * 1000);
+    // endTime = CycleTimer::currentSeconds();
+    // elapsedTime = endTime - startTime;
+    // printf("[single mandelbrot thread %d]:\t\t[%.3f] ms\n", args->threadId , elapsedTime * 1000);
 }
 
 //
