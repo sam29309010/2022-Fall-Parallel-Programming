@@ -1,5 +1,4 @@
 #include "cg_impl.h"
-#include <omp.h>
 //---------------------------------------------------------------------
 // Floaging point arrays here are named as in spec discussion of
 // CG algorithm
@@ -58,7 +57,7 @@ void conj_grad(int colidx[],
         //       unrolled-by-two version is some 10% faster.
         //       The unrolled-by-8 version below is significantly faster
         //       on the Cray t3d - overall speed of code is 1.5 times faster.
-        #pragma omp parallel for
+        #pragma omp parallel for schedule(static)
         for (j = 0; j < lastrow - firstrow + 1; j++)
         {
             sum = 0.0;
@@ -68,7 +67,7 @@ void conj_grad(int colidx[],
             }
             q[j] = sum;
         }
-        
+
         //---------------------------------------------------------------------
         // Obtain p.q
         //---------------------------------------------------------------------
@@ -128,6 +127,7 @@ void conj_grad(int colidx[],
     // The partition submatrix-vector multiply
     //---------------------------------------------------------------------
     sum = 0.0;
+    #pragma omp parallel for schedule(static)
     for (j = 0; j < lastrow - firstrow + 1; j++)
     {
         d = 0.0;

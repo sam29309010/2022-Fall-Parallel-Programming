@@ -17,15 +17,17 @@
 //
 void pageRank(Graph g, double *solution, double damping, double convergence)
 {
+
   // initialize vertex weights to uniform probability. Double
   // precision scores are used to avoid underflow for large graphs
 
   int numNodes = num_nodes(g);
   double equal_prob = 1.0 / numNodes;
-
   double no_outgoing_edges;
   double global_diff = 0;
-  double *solution_new = (double *) malloc(numNodes * sizeof(double));
+  // double *solution_new = (double *) malloc(numNodes * sizeof(double));
+  double *prev_solution = (double *) malloc(numNodes * sizeof(double));
+  
   #pragma omp parallel for
   for (int i = 0; i < numNodes; ++i)
   {
@@ -36,6 +38,8 @@ void pageRank(Graph g, double *solution, double damping, double convergence)
     no_outgoing_edges = 0;
     global_diff = 0;
     
+    memcpy(prev_solution, solution, numNodes*sizeof(double));
+    
     #pragma omp parallel for reduction(+:no_outgoing_edges)
     for (int i = 0; i < numNodes; ++i){
       if (outgoing_size(g, i) == 0) no_outgoing_edges += damping * solution[i] / numNodes;
@@ -45,23 +49,17 @@ void pageRank(Graph g, double *solution, double damping, double convergence)
     for (int i = 0; i < numNodes; ++i){
       const Vertex* start = incoming_begin(g, i);
       const Vertex* end = incoming_end(g, i);
-      solution_new[i] = 0;
+      double sum = 0.0;
       for (const Vertex* v=start; v!=end; v++){
-        solution_new[i] += solution[*v] / (double)outgoing_size(g, *v);
+        sum += prev_solution[*v] / (double)outgoing_size(g, *v);
       }
-      solution_new[i] = (damping * solution_new[i]) + (1.0-damping) / numNodes;
-      solution_new[i] += no_outgoing_edges;
-      global_diff += fabs(solution_new[i] - solution[i]);
+      sum = (damping * sum) + (1.0-damping) / numNodes + no_outgoing_edges;
+      solution[i] = sum;
+      global_diff += fabs(sum - prev_solution[i]);
     }
-
-    #pragma omp parallel for
-    for (int i = 0; i < numNodes; ++i){
-      solution[i] = solution_new[i];
-    }
-    // memcpy(solution, solution_new, numNodes*sizeof(double));
   } while (global_diff >= convergence);
-  
 
+  free(prev_solution);
 
   /*
      For PP students: Implement the page rank algorithm here.  You

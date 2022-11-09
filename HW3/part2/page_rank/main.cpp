@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 
             //Run implementations
             start = CycleTimer::currentSeconds();
-            pageRank(g, sol1, PageRankDampening, PageRankDampening);
+            pageRank(g, sol1, PageRankDampening, PageRankConvergence);
             pagerank_time = CycleTimer::currentSeconds() - start;
 
             //Run staff reference implementation
