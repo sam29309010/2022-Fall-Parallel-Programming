@@ -2,8 +2,6 @@ CXX=gcc
 CFLAGS=-g -Wall -O3 -mavx2 
 IFLAGS=-ISIMDxorshift/include
 LFALGS=-lpthread
-# TBD debug implementation
-# TBD make sure the avx2 is used
 SIMD_RAN_PATH=./SIMDxorshift/src/
 SRC=pi.c $(SIMD_RAN_PATH)/simdxorshift128plus.c $(SIMD_RAN_PATH)/xorshift128plus.c
 OBJ=${SRC:.c=.o}
