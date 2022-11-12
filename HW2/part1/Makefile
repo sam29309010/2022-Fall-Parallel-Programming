@@ -16,9 +16,8 @@ $(EXE): $(OBJ)
 
 %.o: %.c
 	$(CXX) -c $^ -o $@ $(CFLAGS) $(LFALGS) $(IFLAGS)
-	$(CXX) -S $^ $(CFLAGS) $(LFALGS) $(IFLAGS)
 
 .PHONY: clean
 
 clean:
-	rm -rf *.o *.s $(SIMD_RAN_PATH)/*.o $(SIMD_RAN_PATH)/*.s *.out
+	rm -rf *.o $(SIMD_RAN_PATH)/*.o  *.out
