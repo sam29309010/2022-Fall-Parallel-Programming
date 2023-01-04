@@ -1,0 +1,1 @@
+zip -r HW6_310551145.zip kernel.cl hostFE.c url.txt cuda_impl/
