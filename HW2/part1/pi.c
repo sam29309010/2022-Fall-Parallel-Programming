@@ -36,6 +36,7 @@ void *single_thread_estimation_serial(void *params){
 }
 
 // SIMD version
+// Precision Error! Should use datatype double
 void *single_thread_estimation_SIMD(void *thread_arg){
     Thread_Arg* arg = (Thread_Arg *) thread_arg;
     long long int hit = 0, num_toss_simd = (arg->total_toss) / 8;
